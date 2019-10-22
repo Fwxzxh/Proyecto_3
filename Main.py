@@ -70,12 +70,17 @@ def getcoef():  # recuerda que si no hay termino independiente se le quita el es
     fixcoef.reverse()
     return fixcoef
 
+def Error(t, j):
+    error = (t-j)/(t)
+    errorP = error*100
+    errorP = abs(errorP)
+    return errorP
 
-def LongitudArco(f, a, b):# f=funcion,a=intSUP, b+intIF, n=numero de x
-    n = 10000
+
+def LongitudArco(f, a, b, e):# f=funcion,a=intSUP, b+intIF, n=numero de x
+    resp1 = 0.1
+    n = 1000000
     df = f.deriv(1) #sacamos la primera derivada
-    #la = np.poly1d(math.sqrt(1+pow(df(2), 2)))
-
     h = (b - a)/n # h = numero de subintervalos
     suma = 0.0
     for i in range(1, n):
@@ -85,9 +90,25 @@ def LongitudArco(f, a, b):# f=funcion,a=intSUP, b+intIF, n=numero de x
             suma = suma + 2 * math.sqrt(1+pow(df(x), 2))    #   se multiplica por 4
         else:
             suma = suma + 4 * math.sqrt(1+pow(df(x), 2))    #   se multiplica por 2
+        sumaO = suma
     suma = suma + math.sqrt(1+pow(df(a), 2)) + math.sqrt(1+pow(df(b), 2))    #   sumamos el primer elemento y el ultimo
     resp = suma * (h/ 3)
-    return resp
+
+
+
+    for i in range(1, n):
+        #calculamos x
+        x = a + i * h
+        if (i % 2 == 0): # si x es par
+            suma = suma + 2 * math.sqrt(1+pow(df(x), 2))    #   se multiplica por 4
+        else:
+            suma = suma + 4 * math.sqrt(1+pow(df(x), 2))    #   se multiplica por 2
+        suma = suma + math.sqrt(1 + pow(df(a), 2)) + math.sqrt(1 + pow(df(b), 2))  # sumamos el primer elemento y el ultimo
+        resp1 = suma * (h / 3)
+        if  (Error(resp, resp1) >= e):
+            break
+    return resp1
+    #return resp
 
 
 if __name__ == '__main__':  # función main
@@ -95,10 +116,12 @@ if __name__ == '__main__':  # función main
     print(f)
     a =  int(input("cual es el limite inferior?"))
     b =  int(input("cual es el limite superior?"))
-    print(LongitudArco(f, a, b))
+    t = int(input("cuantas cifras significativas querés?"))
+    e = 0.5*10**(2-t)
+    print(round(LongitudArco(f, a, b, e), t))
 
-    t = np.arange(0.0,3.0,0.01)
-    s = 1 + np.sin(2 * np.pi * t)
+    t = np.arange(a,b,0.1)
+    s = f(t)
     fig, ax = plt.subplots()
     ax.plot(t, s)
     ax.grid()
